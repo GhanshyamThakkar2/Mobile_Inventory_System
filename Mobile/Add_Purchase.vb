@@ -720,6 +720,13 @@ Public Class Add_Purchase
         HideAndValidateProduct()
     End Sub
 
+    ' Close the dropdown when the user clicks anywhere else on the form.
+    Private Sub Picker_OutsideClick(sender As Object, e As EventArgs) Handles Me.Click, Panel1.Click, Panel2.Click, Panel3.Click, Panel4.Click, DataGridView1.Click
+        If pnlDrop IsNot Nothing AndAlso pnlDrop.Visible Then
+            HideAndValidateProduct()
+        End If
+    End Sub
+
     ' Double-click confirms the selection and fills the Product Name field.
     Private Sub lstProd_DoubleClick(sender As Object, e As EventArgs) Handles lstProd.DoubleClick
         If lstProd.SelectedItem IsNot Nothing Then
@@ -732,11 +739,28 @@ Public Class Add_Purchase
         End If
     End Sub
 
+    ' Configure the Product Entry form to open as a bordered, smaller popup dialog.
+    Private Sub ConfigureProductPopup(ByVal f As Add_product)
+        f.FormBorderStyle = FormBorderStyle.Sizable
+        f.ControlBox = True
+        f.MaximizeBox = False
+        f.MinimizeBox = False
+        f.Text = "Product Entry"
+        f.WindowState = FormWindowState.Normal
+        f.StartPosition = FormStartPosition.CenterParent
+        f.ClientSize = New Size(1130, 560)
+        ' Minimum size keeps the action buttons from overlapping the input fields
+        f.MinimumSize = New Size(1150, 520)
+        ' The bordered popup already has the window's close button,
+        ' so hide the custom teal close (X) to avoid two close buttons.
+        f.Label9.Visible = False
+    End Sub
+
     ' Add a new product via the Product Entry popup, then refresh the list.
     Private Sub btnDrAdd_Click(sender As Object, e As EventArgs) Handles btnDrAdd.Click
         Pname = cmb_pname.Text.Trim()
         Dim f As New Add_product
-        f.StartPosition = FormStartPosition.CenterScreen
+        ConfigureProductPopup(f)
         f.ShowDialog(Me)
         Pname = ""
         load_product()
@@ -752,7 +776,7 @@ Public Class Add_Purchase
         End If
         Dim name As String = lstProd.SelectedItem.ToString()
         Dim f As New Add_product
-        f.StartPosition = FormStartPosition.CenterScreen
+        ConfigureProductPopup(f)
         f.LoadProductForEdit(name)
         f.ShowDialog(Me)
         load_product()

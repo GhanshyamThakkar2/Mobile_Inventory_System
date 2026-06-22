@@ -52,4 +52,12 @@ Public Class IMEI_store
     Private Sub Label4_Click(sender As Object, e As EventArgs) Handles Label4.Click
         Me.Close()
     End Sub
+
+    Private Sub Label4_MouseHover(sender As Object, e As EventArgs) Handles Label4.MouseHover
+        Label4.BackColor = Color.Red
+    End Sub
+
+    Private Sub Label4_MouseLeave(sender As Object, e As EventArgs) Handles Label4.MouseLeave
+        Label4.BackColor = Color.Teal
+    End Sub
 End Class
