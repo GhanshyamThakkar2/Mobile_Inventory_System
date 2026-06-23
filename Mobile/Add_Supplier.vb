@@ -80,6 +80,32 @@ Public Class Add_Supplier
         DataGridView1.DataSource = ds.Tables(0)
     End Sub
 
+    ' Pre-load an existing supplier into the form for editing (used by Purchase Entry's ledger picker).
+    Public Sub LoadSupplierForEdit(ByVal supplierName As String)
+        Try
+            Dim d As New Dao
+            Dim ds As New Data.DataSet
+            ds = d.loaddata("select * from Supplier where Supplier_Name='" & supplierName & "'")
+            If ds.Tables(0).Rows.Count > 0 Then
+                Dim r As DataRow = ds.Tables(0).Rows(0)
+                txt_id.Text = r("Sup_Id").ToString()
+                txt_sname.Text = r("Supplier_Name").ToString()
+                txt_GST.Text = r("GST_No").ToString()
+                txt_bname.Text = r("Brand").ToString()
+                txt_Cno.Text = r("Contact_no").ToString()
+                txt_Pd.Text = r("Payment_Duration").ToString()
+                txt_add.Text = r("Address").ToString()
+                txt_st.Text = r("State").ToString()
+                txt_city.Text = r("City").ToString()
+                txt_bank_name.Text = r("Bank_Name").ToString()
+                flag = 1
+                btn_del.Enabled = True
+            End If
+        Catch ex As Exception
+            MessageBox.Show(ex.Message)
+        End Try
+    End Sub
+
     Private Sub DataGridView1_CellContentDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles DataGridView1.CellContentDoubleClick
         If DataGridView1.Rows.Count > 0 Then
             'Supplier ID

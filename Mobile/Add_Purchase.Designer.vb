@@ -43,7 +43,7 @@ Partial Class Add_Purchase
         Me.Label7 = New System.Windows.Forms.Label()
         Me.Label8 = New System.Windows.Forms.Label()
         Me.Label9 = New System.Windows.Forms.Label()
-        Me.cmb_supname = New System.Windows.Forms.ComboBox()
+        Me.cmb_supname = New System.Windows.Forms.TextBox()
         Me.txt_gst_no = New System.Windows.Forms.TextBox()
         Me.txt_brand = New System.Windows.Forms.TextBox()
         Me.DateTimePicker2 = New System.Windows.Forms.DateTimePicker()
@@ -251,13 +251,12 @@ Partial Class Add_Purchase
         '
         'cmb_supname
         '
-        Me.cmb_supname.FlatStyle = System.Windows.Forms.FlatStyle.System
+        Me.cmb_supname.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.cmb_supname.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.cmb_supname.FormattingEnabled = True
         Me.cmb_supname.Location = New System.Drawing.Point(191, 28)
         Me.cmb_supname.Margin = New System.Windows.Forms.Padding(2)
         Me.cmb_supname.Name = "cmb_supname"
-        Me.cmb_supname.Size = New System.Drawing.Size(206, 28)
+        Me.cmb_supname.Size = New System.Drawing.Size(206, 26)
         Me.cmb_supname.TabIndex = 8
         '
         'txt_gst_no
@@ -324,6 +323,7 @@ Partial Class Add_Purchase
         Me.Panel3.Controls.Add(Me.txt_hsn)
         Me.Panel3.Controls.Add(Me.Label8)
         Me.Panel3.Controls.Add(Me.Label9)
+        Me.Panel3.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Panel3.Location = New System.Drawing.Point(8, 206)
         Me.Panel3.Margin = New System.Windows.Forms.Padding(2)
         Me.Panel3.Name = "Panel3"
@@ -471,6 +471,7 @@ Partial Class Add_Purchase
         Me.txt_qty.Location = New System.Drawing.Point(488, 23)
         Me.txt_qty.Margin = New System.Windows.Forms.Padding(2)
         Me.txt_qty.Name = "txt_qty"
+        Me.txt_qty.ReadOnly = True
         Me.txt_qty.Size = New System.Drawing.Size(123, 26)
         Me.txt_qty.TabIndex = 17
         Me.txt_qty.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
@@ -524,6 +525,7 @@ Partial Class Add_Purchase
         Me.Panel2.Controls.Add(Me.Label4)
         Me.Panel2.Controls.Add(Me.Label3)
         Me.Panel2.Controls.Add(Me.Label2)
+        Me.Panel2.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Panel2.Location = New System.Drawing.Point(8, 62)
         Me.Panel2.Margin = New System.Windows.Forms.Padding(2)
         Me.Panel2.Name = "Panel2"
@@ -559,6 +561,7 @@ Partial Class Add_Purchase
         Me.Panel4.Controls.Add(Me.txt_round)
         Me.Panel4.Controls.Add(Me.txt_grd_tot)
         Me.Panel4.Controls.Add(Me.Label16)
+        Me.Panel4.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Panel4.Location = New System.Drawing.Point(8, 541)
         Me.Panel4.Margin = New System.Windows.Forms.Padding(2)
         Me.Panel4.Name = "Panel4"
@@ -764,6 +767,7 @@ Partial Class Add_Purchase
         Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing
         Me.DataGridView1.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Purchase_id, Me.Product_Name, Me.HSN_Code, Me.Quantity, Me.Rate, Me.P_CGST, Me.P_SGST, Me.P_Total})
         Me.DataGridView1.EnableHeadersVisualStyles = False
+        Me.DataGridView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) Or System.Windows.Forms.AnchorStyles.Left) Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.DataGridView1.Location = New System.Drawing.Point(8, 345)
         Me.DataGridView1.Margin = New System.Windows.Forms.Padding(2)
         Me.DataGridView1.Name = "DataGridView1"
@@ -874,6 +878,7 @@ Partial Class Add_Purchase
         Me.Btn_add_list.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.Btn_add_list.ForeColor = System.Drawing.Color.Teal
         Me.Btn_add_list.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Btn_add_list.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Btn_add_list.Location = New System.Drawing.Point(1052, 379)
         Me.Btn_add_list.Margin = New System.Windows.Forms.Padding(2)
         Me.Btn_add_list.Name = "Btn_add_list"
@@ -890,6 +895,7 @@ Partial Class Add_Purchase
         Me.Btn_new.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.Btn_new.ForeColor = System.Drawing.Color.Teal
         Me.Btn_new.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Btn_new.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Btn_new.Location = New System.Drawing.Point(1052, 432)
         Me.Btn_new.Margin = New System.Windows.Forms.Padding(2)
         Me.Btn_new.Name = "Btn_new"
@@ -907,6 +913,7 @@ Partial Class Add_Purchase
         Me.Btn_delete.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.Btn_delete.ForeColor = System.Drawing.Color.Crimson
         Me.Btn_delete.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Btn_delete.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Btn_delete.Location = New System.Drawing.Point(1052, 591)
         Me.Btn_delete.Margin = New System.Windows.Forms.Padding(2)
         Me.Btn_delete.Name = "Btn_delete"
@@ -923,6 +930,7 @@ Partial Class Add_Purchase
         Me.Btn_search.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.Btn_search.ForeColor = System.Drawing.Color.Teal
         Me.Btn_search.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Btn_search.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Btn_search.Location = New System.Drawing.Point(1052, 541)
         Me.Btn_search.Margin = New System.Windows.Forms.Padding(2)
         Me.Btn_search.Name = "Btn_search"
@@ -938,6 +946,7 @@ Partial Class Add_Purchase
         Me.Btn_save.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.Btn_save.ForeColor = System.Drawing.Color.White
         Me.Btn_save.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Btn_save.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Btn_save.Location = New System.Drawing.Point(1052, 485)
         Me.Btn_save.Margin = New System.Windows.Forms.Padding(2)
         Me.Btn_save.Name = "Btn_save"
@@ -951,6 +960,8 @@ Partial Class Add_Purchase
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(247, Byte), Integer), CType(CType(240, Byte), Integer))
+        Me.AutoScroll = True
+        Me.AutoScrollMinSize = New System.Drawing.Size(1221, 673)
         Me.ClientSize = New System.Drawing.Size(1221, 673)
         Me.ControlBox = False
         Me.Controls.Add(Me.Btn_save)
@@ -984,7 +995,7 @@ Partial Class Add_Purchase
     Friend WithEvents txt_invoice As TextBox
     Friend WithEvents txt_brand As TextBox
     Friend WithEvents txt_gst_no As TextBox
-    Friend WithEvents cmb_supname As ComboBox
+    Friend WithEvents cmb_supname As TextBox
     Friend WithEvents Label7 As Label
     Friend WithEvents Label6 As Label
     Friend WithEvents Label5 As Label

@@ -8,14 +8,27 @@ Public Class Add_Purchase
     Private allProducts As New List(Of String)
     Private confirmedProduct As String = ""
     Private suppressFilter As Boolean = False
+    Private suppressShowOnce As Boolean = False
     Private pnlDrop As Panel
     Private WithEvents lstProd As ListBox
     Private WithEvents btnDrAdd As Button
     Private WithEvents btnDrEdit As Button
     Private WithEvents btnDrDel As Button
 
+    ' ---- Custom searchable Ledger/Supplier dropdown (with Add / Edit / Delete) ----
+    Private allSuppliers As New List(Of String)
+    Private confirmedSupplier As String = ""
+    Private suppressSupFilter As Boolean = False
+    Private suppressSupShowOnce As Boolean = False
+    Private pnlSupDrop As Panel
+    Private WithEvents lstSup As ListBox
+    Private WithEvents btnSupAdd As Button
+    Private WithEvents btnSupEdit As Button
+    Private WithEvents btnSupDel As Button
+
     Private Sub Add_Purchase_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
+        BuildSupplierDropdown()
         cmb_supname.Focus()
         load_supplier()
         ComboBox1.Text = ""
@@ -61,18 +74,33 @@ Public Class Add_Purchase
             Dim d As New Dao
             Dim ds As New Data.DataSet
 
-            ds = d.loaddata("Select distinct(Supplier_Name),Sup_id from Supplier")
+            ds = d.loaddata("Select distinct(Supplier_Name),Sup_id from Supplier order by Supplier_Name")
 
-            cmb_supname.DisplayMember = "Supplier_Name"
-            cmb_supname.ValueMember = "Sup_id"
-            cmb_supname.DataSource = ds.Tables(0)
+            allSuppliers.Clear()
+            For Each row As DataRow In ds.Tables(0).Rows
+                allSuppliers.Add(row("Supplier_Name").ToString())
+            Next
 
-
+            If lstSup IsNot Nothing Then FilterSupplierList()
 
         Catch ex As Exception
 
 
 
+        End Try
+    End Sub
+
+    ' Fill the GST No / Brand for the chosen supplier (by name).
+    Private Sub LoadSupplierDetails(ByVal supName As String)
+        Try
+            Dim d As New Dao
+            Dim ds As New Data.DataSet
+            ds = d.loaddata("Select GST_No,Brand from Supplier where Supplier_Name='" & supName & "'")
+            If ds.Tables(0).Rows.Count > 0 Then
+                txt_gst_no.Text = ds.Tables(0).Rows(0).Item(0).ToString()
+                txt_brand.Text = ds.Tables(0).Rows(0).Item(1).ToString()
+            End If
+        Catch ex As Exception
         End Try
     End Sub
 
@@ -98,25 +126,6 @@ Public Class Add_Purchase
         End Try
     End Sub
 
-    Private Sub txt_supname_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmb_supname.SelectedIndexChanged
-
-        If cmb_supname.Text <> "" Then
-
-            'load gst number in txt_gst_no
-
-            Dim d As New Dao
-            Dim ds As New Data.DataSet
-
-            ds = d.loaddata("Select GST_No,Brand from Supplier where Sup_Id =" & cmb_supname.SelectedValue)
-
-            If ds.Tables(0).Rows.Count > 0 Then
-
-                txt_gst_no.Text = ds.Tables(0).Rows(0).Item(0)
-                txt_brand.Text = ds.Tables(0).Rows(0).Item(1)
-
-            End If
-        End If
-    End Sub
 
 
 
@@ -376,11 +385,22 @@ Public Class Add_Purchase
 
     Private Sub txt_qty_Enter(sender As Object, e As EventArgs) Handles txt_qty.Enter
 
+        ' Accept only a valid product name before moving on to Qty.
+        HideAndValidateProduct()
+
+        If cmb_pname.Text.Trim() = "" Then
+            MessageBox.Show("Please select a valid product from the list first.", "Product", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.BeginInvoke(New MethodInvoker(Sub() cmb_pname.Focus()))
+            Return
+        End If
+
         Dim imei As New IMEI_store
-
-            imei.Show()
-
-
+        If imei.ShowDialog(Me) = DialogResult.OK Then
+            ' reflect the quantity entered (= number of IMEIs) back into Purchase Entry
+            txt_qty.Text = qty
+            txt_amt.Text = Math.Round(Val(qty) * Val(txt_rate.Text), 2)
+        End If
+        imei.Dispose()
 
     End Sub
 
@@ -392,23 +412,29 @@ Public Class Add_Purchase
         'calculate the amount according to qty 
 
 
-        Dim rate As Double = Val(txt_rate.Text)
+        ' Amount = Qty x Rate (without tax); GST and Total Amount follow in RecalcProductLine
+        txt_amt.Text = Math.Round(Val(txt_qty.Text) * Val(txt_rate.Text), 2)
+        RecalcProductLine()
 
-        txt_amt.Text = Math.Round(qty * rate, 2)
+        load_imei()
 
-        'calculate the total amount with cgst and sgst
+    End Sub
 
-        Dim cgst As Double = Math.Round(Val(txt_cgst.Text) * Val(txt_amt.Text) / 100, 2)
-        Dim sgst As Double = Math.Round(Val(txt_sgst.Text) * Val(txt_amt.Text) / 100, 2)
+    ' Recalculate the per-product GST amounts and the Total Amount for the current line.
+    Private Sub RecalcProductLine()
+        Dim amt As Double = Val(txt_amt.Text)
+        Dim cgst As Double = Math.Round(amt * Val(txt_cgst.Text) / 100, 2)
+        Dim sgst As Double = Math.Round(amt * Val(txt_sgst.Text) / 100, 2)
 
         txt_cgst_amtper.Text = cgst
         txt_sgst_amtper.Text = sgst
         txt_pgst_tot.Text = cgst + sgst
+        txt_tot_amt.Text = Math.Round(amt + cgst + sgst, 2)
+    End Sub
 
-        txt_tot_amt.Text = Val(txt_amt.Text) + Val(txt_pgst_tot.Text)
-
-        load_imei()
-
+    ' Recalculate when the CGST%/SGST% values are changed.
+    Private Sub gst_percent_Changed(sender As Object, e As EventArgs) Handles txt_cgst.TextChanged, txt_sgst.TextChanged
+        RecalcProductLine()
     End Sub
 
 
@@ -442,11 +468,7 @@ Public Class Add_Purchase
     End Sub
 
     Private Sub txt_amt_TextChanged(sender As Object, e As EventArgs) Handles txt_amt.TextChanged
-
-        txt_cgst_amtper.Text = Math.Round(Val(txt_amt.Text) * Val(txt_cgst.Text) / 100, 2)
-        txt_sgst_amtper.Text = Math.Round(Val(txt_amt.Text) * Val(txt_sgst.Text) / 100, 2)
-
-        txt_pgst_tot.Text = Val(txt_cgst_amtper.Text) + Val(txt_sgst_amtper.Text)
+        RecalcProductLine()
     End Sub
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Btn_delete.Click
@@ -522,12 +544,6 @@ Public Class Add_Purchase
             If Asc(e.KeyChar) < 48 Or Asc(e.KeyChar) > 57 Then
                 e.Handled = True
             End If
-        End If
-    End Sub
-
-    Private Sub cmb_supname_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmb_supname.KeyPress
-        If sender.name = cmb_supname.Name Then
-            AutoSearch(sender, e, True)
         End If
     End Sub
 
@@ -700,6 +716,11 @@ Public Class Add_Purchase
     End Sub
 
     Private Sub cmb_pname_GotFocus(sender As Object, e As EventArgs) Handles cmb_pname.GotFocus
+        ' Skip re-opening the dropdown once, right after a double-click selection.
+        If suppressShowOnce Then
+            suppressShowOnce = False
+            Return
+        End If
         ShowProductDropdown()
     End Sub
 
@@ -725,6 +746,9 @@ Public Class Add_Purchase
         If pnlDrop IsNot Nothing AndAlso pnlDrop.Visible Then
             HideAndValidateProduct()
         End If
+        If pnlSupDrop IsNot Nothing AndAlso pnlSupDrop.Visible Then
+            HideAndValidateSupplier()
+        End If
     End Sub
 
     ' Double-click confirms the selection and fills the Product Name field.
@@ -735,7 +759,9 @@ Public Class Add_Purchase
             suppressFilter = False
             confirmedProduct = cmb_pname.Text
             pnlDrop.Visible = False
-            txt_qty.Focus()
+            ' Just select the product; do NOT jump to Qty (which would open the IMEI form).
+            suppressShowOnce = True
+            cmb_pname.Focus()
         End If
     End Sub
 
@@ -803,6 +829,183 @@ Public Class Add_Purchase
             ShowProductDropdown()
             cmb_pname.Focus()
         End If
+    End Sub
+
+    ' ===================== Custom Ledger / Supplier Dropdown =====================
+
+    Private Sub BuildSupplierDropdown()
+        If pnlSupDrop IsNot Nothing Then Return
+
+        pnlSupDrop = New Panel()
+        pnlSupDrop.BorderStyle = BorderStyle.FixedSingle
+        pnlSupDrop.BackColor = Color.White
+        pnlSupDrop.Size = New Size(340, 250)
+        pnlSupDrop.Visible = False
+
+        lstSup = New ListBox()
+        lstSup.BorderStyle = BorderStyle.None
+        lstSup.Font = New Font("Microsoft Sans Serif", 11.0!)
+        lstSup.IntegralHeight = False
+        lstSup.Dock = DockStyle.Fill
+        pnlSupDrop.Controls.Add(lstSup)
+
+        Dim bar As New Panel()
+        bar.Height = 44
+        bar.Dock = DockStyle.Bottom
+        bar.BackColor = Color.Teal
+        pnlSupDrop.Controls.Add(bar)
+
+        btnSupAdd = MakeBarButton("Add", 6)
+        btnSupEdit = MakeBarButton("Edit", 116)
+        btnSupDel = MakeBarButton("Delete", 226)
+        bar.Controls.Add(btnSupAdd)
+        bar.Controls.Add(btnSupEdit)
+        bar.Controls.Add(btnSupDel)
+
+        Me.Controls.Add(pnlSupDrop)
+        pnlSupDrop.BringToFront()
+    End Sub
+
+    Private Sub ShowSupplierDropdown()
+        If pnlSupDrop Is Nothing Then BuildSupplierDropdown()
+        FilterSupplierList()
+        Dim scr As Point = cmb_supname.PointToScreen(New Point(0, cmb_supname.Height))
+        pnlSupDrop.Location = Me.PointToClient(scr)
+        pnlSupDrop.Visible = True
+        pnlSupDrop.BringToFront()
+    End Sub
+
+    Private Sub FilterSupplierList()
+        If lstSup Is Nothing Then Return
+        Dim term As String = cmb_supname.Text.Trim().ToLower()
+        Dim matches As New List(Of String)
+        For Each s As String In allSuppliers
+            If term = "" OrElse s.ToLower().Contains(term) Then matches.Add(s)
+        Next
+        matches.Sort()
+        lstSup.BeginUpdate()
+        lstSup.Items.Clear()
+        For Each m As String In matches
+            lstSup.Items.Add(m)
+        Next
+        lstSup.EndUpdate()
+    End Sub
+
+    Private Sub HideAndValidateSupplier()
+        If pnlSupDrop IsNot Nothing Then pnlSupDrop.Visible = False
+        Dim typed As String = cmb_supname.Text.Trim()
+        Dim found As String = ""
+        For Each s As String In allSuppliers
+            If String.Equals(s, typed, StringComparison.OrdinalIgnoreCase) Then
+                found = s
+                Exit For
+            End If
+        Next
+        If found <> "" Then
+            confirmedSupplier = found
+            LoadSupplierDetails(found)
+        End If
+        ' only valid supplier names are accepted; invalid text reverts
+        suppressSupFilter = True
+        cmb_supname.Text = confirmedSupplier
+        suppressSupFilter = False
+    End Sub
+
+    Private Sub cmb_supname_GotFocus(sender As Object, e As EventArgs) Handles cmb_supname.GotFocus
+        If suppressSupShowOnce Then
+            suppressSupShowOnce = False
+            Return
+        End If
+        ShowSupplierDropdown()
+    End Sub
+
+    Private Sub cmb_supname_TextChanged(sender As Object, e As EventArgs) Handles cmb_supname.TextChanged
+        If suppressSupFilter OrElse pnlSupDrop Is Nothing Then Return
+        FilterSupplierList()
+        If Not pnlSupDrop.Visible Then ShowSupplierDropdown()
+    End Sub
+
+    Private Sub SupplierPicker_Leave(sender As Object, e As EventArgs) Handles cmb_supname.Leave, lstSup.Leave, btnSupAdd.Leave, btnSupEdit.Leave, btnSupDel.Leave
+        Me.BeginInvoke(New MethodInvoker(AddressOf CheckHideSupplierPicker))
+    End Sub
+
+    Private Sub CheckHideSupplierPicker()
+        If pnlSupDrop Is Nothing Then Return
+        If cmb_supname.Focused OrElse lstSup.Focused OrElse btnSupAdd.Focused OrElse btnSupEdit.Focused OrElse btnSupDel.Focused Then Return
+        HideAndValidateSupplier()
+    End Sub
+
+    Private Sub lstSup_DoubleClick(sender As Object, e As EventArgs) Handles lstSup.DoubleClick
+        If lstSup.SelectedItem IsNot Nothing Then
+            suppressSupFilter = True
+            cmb_supname.Text = lstSup.SelectedItem.ToString()
+            suppressSupFilter = False
+            confirmedSupplier = cmb_supname.Text
+            LoadSupplierDetails(confirmedSupplier)
+            pnlSupDrop.Visible = False
+            suppressSupShowOnce = True
+            cmb_supname.Focus()
+        End If
+    End Sub
+
+    Private Sub btnSupAdd_Click(sender As Object, e As EventArgs) Handles btnSupAdd.Click
+        Dim f As New Add_Supplier
+        ConfigureSupplierPopup(f)
+        f.txt_sname.Text = cmb_supname.Text.Trim()
+        f.ShowDialog(Me)
+        load_supplier()
+        ShowSupplierDropdown()
+        cmb_supname.Focus()
+    End Sub
+
+    Private Sub btnSupEdit_Click(sender As Object, e As EventArgs) Handles btnSupEdit.Click
+        If lstSup.SelectedItem Is Nothing Then
+            MessageBox.Show("Please select a ledger from the list to edit.", "Edit Ledger", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+        Dim name As String = lstSup.SelectedItem.ToString()
+        Dim f As New Add_Supplier
+        ConfigureSupplierPopup(f)
+        f.LoadSupplierForEdit(name)
+        f.ShowDialog(Me)
+        load_supplier()
+        ShowSupplierDropdown()
+        cmb_supname.Focus()
+    End Sub
+
+    Private Sub btnSupDel_Click(sender As Object, e As EventArgs) Handles btnSupDel.Click
+        If lstSup.SelectedItem Is Nothing Then
+            MessageBox.Show("Please select a ledger from the list to delete.", "Delete Ledger", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+        Dim name As String = lstSup.SelectedItem.ToString()
+        If MessageBox.Show("Delete '" & name & "' ?", "Delete Ledger", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+            Try
+                Dim d As New Dao
+                d.modifyData("delete from Supplier where Supplier_Name='" & name & "'")
+            Catch ex As Exception
+                MessageBox.Show(ex.Message)
+            End Try
+            If String.Equals(confirmedSupplier, name, StringComparison.OrdinalIgnoreCase) Then confirmedSupplier = ""
+            load_supplier()
+            ShowSupplierDropdown()
+            cmb_supname.Focus()
+        End If
+    End Sub
+
+    ' Open the Supplier Entry form as a bordered, smaller popup dialog.
+    Private Sub ConfigureSupplierPopup(ByVal f As Add_Supplier)
+        f.FormBorderStyle = FormBorderStyle.Sizable
+        f.ControlBox = True
+        f.MaximizeBox = False
+        f.MinimizeBox = False
+        f.Text = "Supplier Entry"
+        f.WindowState = FormWindowState.Normal
+        f.StartPosition = FormStartPosition.CenterParent
+        f.ClientSize = New Size(1180, 600)
+        f.MinimumSize = New Size(1180, 560)
+        ' bordered popup already has the window close button; hide the custom teal X
+        f.Label12.Visible = False
     End Sub
 
 End Class
